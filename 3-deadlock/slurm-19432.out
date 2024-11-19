@@ -1,0 +1,62 @@
+Hello from processor node-1[6] 0 of 10
+Hello from processor node-7[6] 6 of 10
+Hello from processor node-6[6] 5 of 10
+Hello from processor node-10[7] 9 of 10
+Hello from processor node-9[6] 8 of 10
+Hello from processor node-5[6] 4 of 10
+Hello from processor node-3[6] 2 of 10
+Hello from processor node-2[6] 1 of 10
+Hello from processor node-4[6] 3 of 10
+Hello from processor node-8[6] 7 of 10
+[4] Time = 0.009028  Data=      800 KByte
+[4]  Bandwith[0] = 86.539458 MByte/sek
+[8] Time = 0.014534  Data=      800 KByte
+[8]  Bandwith[0] = 53.752837 MByte/sek
+[2] Time = 0.013599  Data=      800 KByte
+[2]  Bandwith[0] = 57.447445 MByte/sek
+[6] Time = 0.012398  Data=      800 KByte
+[6]  Bandwith[0] = 63.016104 MByte/sek
+[4] Time = 0.008090  Data=     1600 KByte
+[4]  Bandwith[1] = 193.140643 MByte/sek
+[0] Time = 0.015009  Data=      800 KByte
+[0]  Bandwith[0] = 52.051036 MByte/sek
+[8] Time = 0.012761  Data=     1600 KByte
+[8]  Bandwith[1] = 122.445960 MByte/sek
+[4] Time = 0.009648  Data=     3200 KByte
+[4]  Bandwith[2] = 323.898610 MByte/sek
+[2] Time = 0.013906  Data=     1600 KByte
+[2]  Bandwith[1] = 112.364632 MByte/sek
+[6] Time = 0.014035  Data=     1600 KByte
+[6]  Bandwith[1] = 111.329999 MByte/sek
+[0] Time = 0.014380  Data=     1600 KByte
+[0]  Bandwith[1] = 108.655187 MByte/sek
+[4] Time = 0.013242  Data=     6400 KByte
+[4]  Bandwith[3] = 471.992851 MByte/sek
+[8] Time = 0.016664  Data=     3200 KByte
+[8]  Bandwith[2] = 187.527414 MByte/sek
+[2] Time = 0.017684  Data=     3200 KByte
+[2]  Bandwith[2] = 176.716823 MByte/sek
+[6] Time = 0.017368  Data=     3200 KByte
+[6]  Bandwith[2] = 179.926520 MByte/sek
+[0] Time = 0.017547  Data=     3200 KByte
+[0]  Bandwith[2] = 178.088053 MByte/sek
+[8] Time = 0.023461  Data=     6400 KByte
+[8]  Bandwith[3] = 266.398382 MByte/sek
+[2] Time = 0.023165  Data=     6400 KByte
+[2]  Bandwith[3] = 269.798153 MByte/sek
+[6] Time = 0.024331  Data=     6400 KByte
+[6]  Bandwith[3] = 256.871934 MByte/sek
+[0] Time = 0.023406  Data=     6400 KByte
+[0]  Bandwith[3] = 267.023819 MByte/sek
+slurmstepd: error: *** JOB 19432 ON node-1 CANCELLED AT 2024-11-17T10:48:17 DUE TO TIME LIMIT ***
+--------------------------------------------------------------------------
+ORTE has lost communication with a remote daemon.
+
+  HNP daemon   : [[45103,0],0] on node node-1
+  Remote daemon: [[45103,0],4] on node node-5
+
+This is usually due to either a failure of the TCP network
+connection to the node, or possibly an internal failure of
+the daemon itself. We cannot recover from this failure, and
+therefore will terminate the job.
+--------------------------------------------------------------------------
