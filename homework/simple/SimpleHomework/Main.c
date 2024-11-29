@@ -9,19 +9,9 @@ typedef struct {
 	int max_y;
 } Rectangle;
 
-typedef struct {
-	Rectangle* rectangles;
-	int rectangles_count;
-	int perimeter;
-} Figure;
-
 void generate_example(int example_number, Rectangle** rectangles, int* length);
 
-void calculate_perimeters(Rectangle* rectangles, int rectangles_length, Figure** result, int* result_length);
-Figure* calculate_perimeter(Rectangle* rectangles, int rectangles_length);
-
-void print_perimeters(Figure* figures, int length);
-void print_perimeter(Figure perimeter);
+int calculate_perimeter(Rectangle* rectangles, int rectangles_length);
 
 typedef struct {
 	struct SegmentsTreeNode* left;
@@ -51,14 +41,9 @@ int main()
 
 	generate_example(1, &rectangles, &rectangles_length);
 
-	printf("%i %i %i %i", rectangles[0].min_x, rectangles[0].min_y, rectangles[0].max_x, rectangles[0].max_y);
+	int perimeter = calculate_perimeter(rectangles, rectangles_length);
 
-	Figure* perimeters;
-	int perimeters_length;
-
-	calculate_perimeters(rectangles, rectangles_length, &perimeters, &perimeters_length);
-
-	print_perimeters(perimeters, perimeters_length);
+	printf("Total perimeter: %i\n", perimeter);
 
 	return 0;
 }
@@ -109,35 +94,25 @@ void generate_example(int exampleNumber, Rectangle** rectangles, int* length)
 
 #pragma region Calculation
 
-void calculate_perimeters(Rectangle* rectangles, int rectangles_length, Figure** result, int* result_length)
-{
-	// TODO: Divide to figures
-
-	*result_length = 1;
-	*result = (Figure*)malloc(*result_length * sizeof(Figure));
-
-	Figure* ptr = *result;
-	ptr[0] = *calculate_perimeter(rectangles, rectangles_length);
-}
-
 typedef struct {
-	int event_x; 
-	int event_type; // 0 - begin, 1 - ending
-	Rectangle* rectangle;
-} RectangleEvent;
+	int pos; 
+	int type; // 0 - begin, 1 - ending
+	int min;
+	int max;
+} Slice;
 
-int compare_rectangle_events(const void* a, const void* b)
+int compare_rectangle_slices(const void* a, const void* b)
 {
-	RectangleEvent* event_a = (RectangleEvent*)a;
-	RectangleEvent* event_b = (RectangleEvent*)b;
+	Slice* event_a = (Slice*)a;
+	Slice* event_b = (Slice*)b;
 
-	return (event_a->event_x - event_b->event_x);
+	return (event_a->pos - event_b->pos);
 }
 
-Figure* calculate_perimeter(Rectangle* rectangles, int rectangles_length)
+int calculate_perimeter(Rectangle* rectangles, int rectangles_length)
 {
 	int rectangle_events_length = rectangles_length * 2;
-	RectangleEvent* rectangle_events = (RectangleEvent*)malloc(rectangle_events_length * sizeof(RectangleEvent));
+	Slice* x_rectangle_events = (Slice*)malloc(rectangle_events_length * sizeof(Slice));
 	
 	int min_y = INT_MAX;
 	int max_y = INT_MIN;
@@ -150,36 +125,30 @@ Figure* calculate_perimeter(Rectangle* rectangles, int rectangles_length)
 		if (rectangles[i].max_y > max_y)
 			max_y = rectangles[i].max_y;
 
-		RectangleEvent start_event = { rectangles[i].min_x, 0, &rectangles[i] };
-		RectangleEvent end_event = { rectangles[i].max_x, 1, &rectangles[i] };
+		Slice start_event = { rectangles[i].min_x, 0, &rectangles[i] };
+		Slice end_event = { rectangles[i].max_x, 1, &rectangles[i] };
 
-		rectangle_events[i * 2] = start_event;
-		rectangle_events[i * 2 + 1] = end_event;
+		x_rectangle_events[i * 2] = start_event;
+		x_rectangle_events[i * 2 + 1] = end_event;
 	}
-	// 5 + 3 + 4 + 2 + 2 + 2 + 2 + 11 + 5
 
-	qsort(rectangle_events, rectangle_events_length, sizeof(RectangleEvent), compare_rectangle_events);
+	qsort(x_rectangle_events, rectangle_events_length, sizeof(Slice), compare_rectangle_events);
 
 	SegmentsTree* tree = build_segments_tree(min_y, max_y);
 
-	int current_x = rectangle_events[0].event_x;
-	int perimeter = 0;
+	int current_x = x_rectangle_events[0].pos;
 
 	for (int i = 0; i < rectangle_events_length; i++)
 	{
-		int added_length = 0;
+		Slice current_event = x_rectangle_events[i];
 
-		RectangleEvent current_event = rectangle_events[i];
-
-		if (current_event.event_type == 0) // Begin
-			added_length = add_interval_to_segments_tree(tree, current_event.rectangle->min_y, current_event.rectangle->max_y);
+		if (current_event.type == 0) // Begin
+			add_interval_to_segments_tree(tree, current_event.rectangle->min_y, current_event.rectangle->max_y);
 		else // End
-			added_length = remove_interval_from_segments_tree(tree, current_event.rectangle->min_y, current_event.rectangle->max_y);
-
-		perimeter += added_length;
-
-		current_x = current_event.event_x;
+			remove_interval_from_segments_tree(tree, current_event.rectangle->min_y, current_event.rectangle->max_y);
 	}
+
+	int perimeter_x = 
 
 	int min_x = INT_MAX;
 	int max_x = INT_MIN;
@@ -192,44 +161,64 @@ Figure* calculate_perimeter(Rectangle* rectangles, int rectangles_length)
 		if (rectangles[i].max_x > max_x)
 			max_x = rectangles[i].max_x;
 
-		RectangleEvent start_event = { rectangles[i].min_y, 0, &rectangles[i] };
-		RectangleEvent end_event = { rectangles[i].max_y, 1, &rectangles[i] };
+		Slice start_event = { rectangles[i].min_y, 0, &rectangles[i] };
+		Slice end_event = { rectangles[i].max_y, 1, &rectangles[i] };
 
-		rectangle_events[i * 2] = start_event;
-		rectangle_events[i * 2 + 1] = end_event;
+		x_rectangle_events[i * 2] = start_event;
+		x_rectangle_events[i * 2 + 1] = end_event;
 	}
 
 	printf("\nPerimeter before: %i\n", perimeter);
 
-	qsort(rectangle_events, rectangle_events_length, sizeof(RectangleEvent), compare_rectangle_events);
+	qsort(x_rectangle_events, rectangle_events_length, sizeof(Slice), compare_rectangle_events);
 
 	tree = build_segments_tree(min_x, max_x);
 
-	int current_y = rectangle_events[0].event_x;
+	int current_y = x_rectangle_events[0].pos;
 
 	for (int i = 0; i < rectangle_events_length; i++)
 	{
 		int added_length = 0;
 
-		RectangleEvent current_event = rectangle_events[i];
+		Slice current_event = x_rectangle_events[i];
 
-		if (current_event.event_type == 0) // Begin
+		if (current_event.type == 0) // Begin
 			added_length = add_interval_to_segments_tree(tree, current_event.rectangle->min_x, current_event.rectangle->max_x);
 		else // End
 			added_length = remove_interval_from_segments_tree(tree, current_event.rectangle->min_x, current_event.rectangle->max_x);
 
 		perimeter += added_length;
 
-		current_y = current_event.event_x;
+		current_y = current_event.pos;
 	}
 
-	Figure* result = (Figure*)malloc(sizeof(Figure));
+	return perimeter;
+}
 
-	result->rectangles = rectangles;
-	result->rectangles_count = rectangles_length;
-	result->perimeter = perimeter;
+int calculate_perimeter_for_slices(Slice* slices, int slices_length)
+{
+	int min_min = INT_MAX;
+	int max_max = INT_MIN;
 
-	return result;
+	for (int i = 0; i < slices_length; i++)
+	{
+		if (slices[i].min < min_min)
+			min_min = slices[i].min;
+
+		if (slices[i].max > max_max)
+			max_max = slices[i].max;
+	}
+
+	qsort(slices, slices_length, sizeof(Slice), compare_rectangle_slices);
+
+	SegmentsTree* tree = build_segments_tree(min_min, max_max);
+
+	for (int i = 0; i < slices_length; i++)
+	{
+		if (slices[i].type == 0)
+			add_interval_to_segments_tree(tree, slices[i].min, slices[i].max);
+
+	}
 }
 
 #pragma endregion
@@ -353,25 +342,6 @@ int decrease_uses_count(SegmentsTree* tree, int node_value)
 	}
 
 	return result;
-}
-
-#pragma endregion
-
-#pragma region Output
-
-void print_perimeters(Figure* perimeters, int length)
-{
-	for (int i = 0; i < length; i++)
-	{
-		printf("Figure %i: ", i);
-		print_perimeter(perimeters[i]);
-	}
-}
-
-
-void print_perimeter(Figure perimeter)
-{
-	printf("Rectangles: %i, total perimeter: %i\n", perimeter.rectangles_count, perimeter.perimeter);
 }
 
 #pragma endregion
