@@ -38,10 +38,21 @@ int main(int argc, char **argv)
                 time = MPI_Wtime();
                 for (i = 0; i < 100; i++)
                 {
-		    MPI_Sendrecv(buf, sz, MPI_INT, myrank + 1, 10,
-				    bufI, sz + 100, MPI_INT, myrank + 1, 20,
-				    MPI_COMM_WORLD, &st);
+                    MPI_Sendrecv(buf, sz, MPI_INT, myrank + 1, 10,
+                            bufI, sz + 100, MPI_INT, myrank + 1, 20,
+                            MPI_COMM_WORLD, &st);
+
+                    if (i >= 98)
+                    {
+                        printf("[%d] Sent buf on iteration %d: %d %d %d ...\n", myrank, i, buf[0], buf[1], buf[2]);
+                        printf("[%d] Received bufI on iteration %d: %d %d %d ...\n", myrank, i, bufI[0], bufI[1], bufI[2]);
+                    }
+
+                    int * tempBuf = buf;
+                    buf = bufI;
+                    bufI = tempBuf;
                 }
+
                 time = MPI_Wtime() - time;
                 printf("[%d] Time = %lf  Data=%9.0f KByte\n",
                        myrank,
@@ -68,10 +79,21 @@ int main(int argc, char **argv)
         {
             for (i = 0; i < 100; i++)
             {
-		MPI_Sendrecv(buf, sz, MPI_INT, myrank - 1, 20,
-				bufI, sz + 100, MPI_INT, myrank - 1, 10,
-				MPI_COMM_WORLD, &st);
-	    }
+                MPI_Sendrecv(buf, sz, MPI_INT, myrank - 1, 20,
+                        bufI, sz + 100, MPI_INT, myrank - 1, 10,
+                        MPI_COMM_WORLD, &st);
+
+                if (i >= 98)
+                {
+                    printf("[%d] Sent buf on iteration %d: %d %d %d ...\n", myrank, i, buf[0], buf[1], buf[2]);
+                    printf("[%d] Received bufI on iteration %d: %d %d %d ...\n", myrank, i, bufI[0], bufI[1], bufI[2]);
+                }
+
+                int * tempBuf = buf;
+                buf = bufI;
+                bufI = tempBuf;
+            }
+
             sz *= 2;
         }
     }
