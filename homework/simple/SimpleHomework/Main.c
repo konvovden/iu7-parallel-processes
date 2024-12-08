@@ -30,7 +30,7 @@ int main()
 	Rectangle* rectangles = NULL;
 	int rectangles_length;
 
-	generate_example(2, &rectangles, &rectangles_length);
+	generate_example(3, &rectangles, &rectangles_length);
 
 	int perimeter = calculate_perimeter(rectangles, rectangles_length);
 
@@ -237,6 +237,176 @@ void generate_example(int exampleNumber, Rectangle** rectangles, int* length)
 		ptr[29].max_x = 23;
 		ptr[29].max_y = -8;
 
+		break;
+	}
+	case 3:
+	{
+		*length = 32;
+		*rectangles = (Rectangle*)malloc(*length * sizeof(Rectangle));
+		Rectangle* ptr = *rectangles;
+
+		ptr[0].min_x = -33;
+		ptr[0].min_y = 29;
+		ptr[0].max_x = -15;
+		ptr[0].max_y = 33;
+
+		ptr[1].min_x = -24;
+		ptr[1].min_y = 21;
+		ptr[1].max_x = -15;
+		ptr[1].max_y = 29;
+
+		ptr[2].min_x = -17;
+		ptr[2].min_y = 23;
+		ptr[2].max_x = 2;
+		ptr[2].max_y = 26;
+
+		ptr[3].min_x = -9;
+		ptr[3].min_y = 20;
+		ptr[3].max_x = -4;
+		ptr[3].max_y = 28;
+
+		ptr[4].min_x = 7;
+		ptr[4].min_y = 21;
+		ptr[4].max_x = 15;
+		ptr[4].max_y = 31;
+
+		ptr[5].min_x = 5;
+		ptr[5].min_y = 23;
+		ptr[5].max_x = 13;
+		ptr[5].max_y = 26;
+
+		ptr[6].min_x = 8;
+		ptr[6].min_y = 24;
+		ptr[6].max_x = 11;
+		ptr[6].max_y = 25;
+
+		ptr[7].min_x = -27;
+		ptr[7].min_y = 5;
+		ptr[7].max_x = -21;
+		ptr[7].max_y = 19;
+
+		ptr[8].min_x = -22;
+		ptr[8].min_y = 13;
+		ptr[8].max_x = -11;
+		ptr[8].max_y = 17;
+
+		ptr[9].min_x = -11;
+		ptr[9].min_y = 8;
+		ptr[9].max_x = 2;
+		ptr[9].max_y = 15;
+
+		ptr[10].min_x = -7;
+		ptr[10].min_y = 11;
+		ptr[10].max_x = -3;
+		ptr[10].max_y = 13;
+
+		ptr[11].min_x = 2;
+		ptr[11].min_y = 15;
+		ptr[11].max_x = 9;
+		ptr[11].max_y = 20;
+
+		ptr[12].min_x = 9;
+		ptr[12].min_y = 9;
+		ptr[12].max_x = 12;
+		ptr[12].max_y = 20;
+
+		ptr[13].min_x = -5;
+		ptr[13].min_y = 4;
+		ptr[13].max_x = 13;
+		ptr[13].max_y = 9;
+
+		ptr[14].min_x = 6;
+		ptr[14].min_y = -5;
+		ptr[14].max_x = 12;
+		ptr[14].max_y = 2;
+
+		ptr[15].min_x = -12;
+		ptr[15].min_y = -1;
+		ptr[15].max_x = -2;
+		ptr[15].max_y = 5;
+
+		ptr[16].min_x = -17;
+		ptr[16].min_y = 3;
+		ptr[16].max_x = -10;
+		ptr[16].max_y = 11;
+
+		ptr[17].min_x = -31;
+		ptr[17].min_y = 3;
+		ptr[17].max_x = -17;
+		ptr[17].max_y = 5;
+
+		ptr[18].min_x = -27;
+		ptr[18].min_y = 0;
+		ptr[18].max_x = -19;
+		ptr[18].max_y = 3;
+
+		ptr[19].min_x = -30;
+		ptr[19].min_y = -3;
+		ptr[19].max_x = -29;
+		ptr[19].max_y = -2;
+
+		ptr[20].min_x = -28;
+		ptr[20].min_y = -11;
+		ptr[20].max_x = -22;
+		ptr[20].max_y = -4;
+
+		ptr[21].min_x = -22;
+		ptr[21].min_y = -13;
+		ptr[21].max_x = -18;
+		ptr[21].max_y = -9;
+
+		ptr[22].min_x = -18;
+		ptr[22].min_y = -11;
+		ptr[22].max_x = -11;
+		ptr[22].max_y = -2;
+
+		ptr[23].min_x = -28;
+		ptr[23].min_y = -19;
+		ptr[23].max_x = -11;
+		ptr[23].max_y = -13;
+
+		ptr[24].min_x = -7;
+		ptr[24].min_y = -18;
+		ptr[24].max_x = 5;
+		ptr[24].max_y = -16;
+
+		ptr[25].min_x = -4;
+		ptr[25].min_y = -10;
+		ptr[25].max_x = 1;
+		ptr[25].max_y = -5;
+
+		ptr[26].min_x = -5;
+		ptr[26].min_y = -14;
+		ptr[26].max_x = 2;
+		ptr[26].max_y = -2;
+
+		ptr[27].min_x = 1;
+		ptr[27].min_y = -10;
+		ptr[27].max_x = 8;
+		ptr[27].max_y = -4;
+
+		ptr[28].min_x = 10;
+		ptr[28].min_y = -15;
+		ptr[28].max_x = 27;
+		ptr[28].max_y = -10;
+
+		ptr[29].min_x = 12;
+		ptr[29].min_y = -17;
+		ptr[29].max_x = 23;
+		ptr[29].max_y = -8;
+
+		ptr[30].min_x = -21;
+		ptr[30].min_y = 24;
+		ptr[30].max_x = -1;
+		ptr[30].max_y = 41;
+
+		ptr[31].min_x = -29;
+		ptr[31].min_y = 25;
+		ptr[31].max_x = -3;
+		ptr[31].max_y = 44;
+
+		// Perimeters: x: 376 - y: 266
+		// Total perimeter : 642
 		break;
 	}
 	}
