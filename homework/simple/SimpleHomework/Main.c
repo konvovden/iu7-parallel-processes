@@ -438,34 +438,24 @@ int compare_rectangle_slices(const void* a, const void* b)
 int calculate_perimeter(Rectangle* rectangles, int rectangles_length)
 {
 	int rectangle_events_length = rectangles_length * 2;
-	Slice* x_rectangle_slices = (Slice*)malloc(rectangle_events_length * sizeof(Slice));
-	Slice* y_rectangle_slices = (Slice*)malloc(rectangle_events_length * sizeof(Slice));
+	Slice* rectangle_slices = (Slice*)malloc(rectangle_events_length * sizeof(Slice));
 
 	for (int i = 0; i < rectangles_length; i++)
 	{
 		Slice start_event = { rectangles[i].min_x, 0, rectangles[i].min_y, rectangles[i].max_y, i };
 		Slice end_event = { rectangles[i].max_x, 1, rectangles[i].min_y, rectangles[i].max_y, i };
 
-		x_rectangle_slices[i * 2] = start_event;
-		x_rectangle_slices[i * 2 + 1] = end_event;
+		rectangle_slices[i * 2] = start_event;
+		rectangle_slices[i * 2 + 1] = end_event;
 	}
 
-	for (int i = 0; i < rectangles_length; i++)
-	{
-		Slice start_event = { rectangles[i].min_y, 0, rectangles[i].min_x, rectangles[i].max_x, i };
-		Slice end_event = { rectangles[i].max_y, 1, rectangles[i].min_x, rectangles[i].max_x, i };
-
-		y_rectangle_slices[i * 2] = start_event;
-		y_rectangle_slices[i * 2 + 1] = end_event;
-	}
 
 	printf("Calculating perimeter...\n");
-	int perimeter = calculate_perimeter_for_slices(x_rectangle_slices, rectangle_events_length);
+	int perimeter = calculate_perimeter_for_slices(rectangle_slices, rectangle_events_length);
 
 	//printf("Perimeters: x: %i - y: %i\n", perimeter_x, perimeter_y);
 
-	free(x_rectangle_slices);
-	free(y_rectangle_slices);
+	free(rectangle_slices);
 
 	return perimeter;
 }
