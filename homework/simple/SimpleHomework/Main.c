@@ -24,6 +24,7 @@ typedef struct {
 int calculate_perimeter_for_slices(Slice* slices, int slices_length);
 int increase_interval_uses(int* interval, int min_interval, int max_interval, int start, int end);
 int decrease_interval_uses(int* interval, int min_interval, int max_interval, int start, int end);
+int count_different_intervals(int* interval, int length);
 
 int main()
 {
@@ -460,18 +461,15 @@ int calculate_perimeter(Rectangle* rectangles, int rectangles_length)
 		y_rectangle_slices[i * 2 + 1] = end_event;
 	}
 
-	printf("Calculating perimeter by y...\n");
-	int perimeter_y = calculate_perimeter_for_slices(x_rectangle_slices, rectangle_events_length);
+	printf("Calculating perimeter...\n");
+	int perimeter = calculate_perimeter_for_slices(x_rectangle_slices, rectangle_events_length);
 
-	printf("Calculating perimeter by x...\n");
-	int perimeter_x = calculate_perimeter_for_slices(y_rectangle_slices, rectangle_events_length);
-
-	printf("Perimeters: x: %i - y: %i\n", perimeter_x, perimeter_y);
+	//printf("Perimeters: x: %i - y: %i\n", perimeter_x, perimeter_y);
 
 	free(x_rectangle_slices);
 	free(y_rectangle_slices);
 
-	return perimeter_x + perimeter_y;
+	return perimeter;
 }
 
 int calculate_perimeter_for_slices(Slice* slices, int slices_length)
@@ -492,24 +490,30 @@ int calculate_perimeter_for_slices(Slice* slices, int slices_length)
 
 	qsort(slices, slices_length, sizeof(Slice), compare_rectangle_slices);
 
-	int* interval_uses = (int*)malloc((max_max - min_min) * sizeof(int));
+	int interval_uses_length = max_max - min_min;
+	int* interval_uses = (int*)malloc(interval_uses_length * sizeof(int));
 
-	for (int i = 0; i < max_max - min_min; i++)
+	for (int i = 0; i < interval_uses_length; i++)
 		interval_uses[i] = 0;
+
+	int current_x = min_min;
 
 	for (int i = 0; i < slices_length; i++)
 	{
-		int added_length = 0;
+		int perimeter_by_x = count_different_intervals(interval_uses, interval_uses_length) * 2 * (slices[i].pos - current_x);
+
+		current_x = slices[i].pos;
+
+		int perimeter_by_y;
 
 		if (slices[i].type == 0)
-			added_length = increase_interval_uses(interval_uses, min_min, max_max, slices[i].min, slices[i].max);
+			perimeter_by_y = increase_interval_uses(interval_uses, min_min, max_max, slices[i].min, slices[i].max);
 		else
-			added_length = decrease_interval_uses(interval_uses, min_min, max_max, slices[i].min, slices[i].max);
+			perimeter_by_y = decrease_interval_uses(interval_uses, min_min, max_max, slices[i].min, slices[i].max);
 
-		printf("Slice[%d] - rectangle %d - type %d - pos %d - from %d to %d - added %d to perimeter (%d)\n", i, slices[i].rectangle_index + 1, slices[i].type, slices[i].pos, slices[i].min, slices[i].max, added_length, perimeter);
+		printf("Slice[%d] - rectangle %d - type %d - pos %d - from %d to %d - added %d + %d to perimeter (%d)\n", i, slices[i].rectangle_index + 1, slices[i].type, slices[i].pos, slices[i].min, slices[i].max, perimeter_by_x, perimeter_by_y, perimeter);
 
-		perimeter += added_length;
-
+		perimeter += perimeter_by_x + perimeter_by_y;
 	}
 
 	free(interval_uses);
@@ -529,6 +533,27 @@ int increase_interval_uses(int* interval, int min_interval, int max_interval, in
 	}
 
 	return added_length;
+}
+
+int count_different_intervals(int* interval, int length)
+{
+	int intervals_count = 0;
+	int has_interval = 0;
+
+	for (int i = 0; i < length; i++)
+	{
+		if (interval[i] > 0 && has_interval == 0)
+		{
+			has_interval = 1;
+			intervals_count++;
+		}
+		else if (interval[i] == 0 && has_interval == 1)
+		{
+			has_interval = 0;
+		}
+	}
+
+	return intervals_count;
 }
 
 int decrease_interval_uses(int* interval, int min_interval, int max_interval, int start, int end)
