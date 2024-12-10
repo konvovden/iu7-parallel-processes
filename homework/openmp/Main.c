@@ -79,19 +79,7 @@ int main(int argc, char** argv)
 	{
 		if (myrank == CONTROLLER_RANK)
 		{
-#pragma omp parallel
-			{
-#pragma omp single nowait
-				{
-					controller_entry_point(example);
-				}
-#pragma omp single nowait
-				{
-					if(OPENMP_THREADS > 1) {
-						worker_entry_point(example);
-					}
-				}
-			}
+			controller_entry_point(example);
 		}
 		else
 		{
@@ -215,8 +203,7 @@ void worker_entry_point(int example)
 	int rectangles_length = get_rectangles_length_for_example(example);
 	Rectangle* rectangles = (Rectangle*)malloc(sizeof(Rectangle) * rectangles_length);
 
-	if(myrank != CONTROLLER_RANK)
-		MPI_Bcast(rectangles, rectangles_length * 4, MPI_INT, CONTROLLER_RANK, MPI_COMM_WORLD);
+	MPI_Bcast(rectangles, rectangles_length * 4, MPI_INT, CONTROLLER_RANK, MPI_COMM_WORLD);
 
 	printf("[%d] Received %d rectangles from controller\n", myrank, rectangles_length);
 
@@ -232,77 +219,70 @@ void worker_entry_point(int example)
 	int current_from = -1;
 	int current_to = -1;
 
-	int exit = 0;
-
-#pragma omp task
+	while(1)
 	{
-		for (int j = 0; j < 1000; j++)
+
+		printf("[%d] Sending perimeter %d for interval from %d to %d to controller\n", myrank, current_perimeter, current_from, current_to);
+
+		MPI_Send(&current_perimeter, 1, MPI_INT, CONTROLLER_RANK, SEND_PERIMETER_TAG, MPI_COMM_WORLD);
+
+		int* interval = (int*)malloc(2 * sizeof(int));
+		MPI_Status status;
+
+		MPI_Recv(interval, 2, MPI_INT, CONTROLLER_RANK, MPI_ANY_TAG, MPI_COMM_WORLD, &status);
+
+		if (status.MPI_TAG == SEND_INTERVAL_TAG)
 		{
+			current_from = interval[0];
+			current_to = interval[1];
 
-			printf("[%d] %d Sending perimeter %d for interval from %d to %d to controller\n", myrank, omp_get_thread_num(), current_from, current_to, current_perimeter);
+			printf("[%d] Received interval from %d to %d from controller\n", myrank, current_from, current_to);
 
-			MPI_Send(&current_perimeter, 1, MPI_INT, CONTROLLER_RANK, SEND_PERIMETER_TAG, MPI_COMM_WORLD);
+			int segments = OPENMP_THREADS;
 
-			int* interval = (int*)malloc(2 * sizeof(int));
-			MPI_Status status;
+			if(myrank == 0)
+				segments = OPENMP_THREADS - 1;
 
-			MPI_Recv(interval, 2, MPI_INT, CONTROLLER_RANK, MPI_ANY_TAG, MPI_COMM_WORLD, &status);
+			double real_segment_length = abs(current_to - current_from) * 1.0 / segments;
+			int int_segment_length = abs(current_to - current_from) / segments;
 
-			if (status.MPI_TAG == SEND_INTERVAL_TAG)
+			if (int_segment_length < 1)
 			{
-				current_from = interval[0];
-				current_to = interval[1];
-
-				printf("[%d] Received interval from %d to %d from controller\n", myrank, current_from, current_to);
-
-				int segments = OPENMP_THREADS;
-
-				if(myrank == 0)
-					segments = OPENMP_THREADS - 1;
-
-				double real_segment_length = abs(current_to - current_from) * 1.0 / segments;
-				int int_segment_length = abs(current_to - current_from) / segments;
-
-				if (int_segment_length < 1)
-				{
-					int_segment_length = 1;
-					segments = abs(current_to - current_from);
-				}
-
-				int* segments_borders = (int*)malloc(segments * 2 * sizeof(int));
-
-				int current_x = current_from;
-
-				for (int i = 0; i < segments; i++)
-				{
-					int next_x = current_x + int_segment_length;
-					double must_be = (current_from + real_segment_length * (i + 1));
-					if (next_x < must_be)
-						next_x += must_be - next_x;
-
-					segments_borders[i * 2] = current_x;
-					segments_borders[i * 2 + 1] = next_x;
-
-					current_x = next_x;
-				}
-
-				current_perimeter = 0;
-
-#pragma omp parallel
-				{
-#pragma omp for
-					for (int i = 0; i < segments; i++) {
-						//printf("%d/%d\n",omp_get_thread_num(), omp_get_max_threads());
-						current_perimeter += calculate_perimeter_for_interval(rectangles, rectangles_length, segments_borders[i * 2], segments_borders[i * 2 + 1], max_x);
-					}
-				}
-
-				free(segments_borders);
+				int_segment_length = 1;
+				segments = abs(current_to - current_from);
 			}
-			else if (status.MPI_TAG == STOP_TAG)
+
+			int* segments_borders = (int*)malloc(segments * 2 * sizeof(int));
+
+			int current_x = current_from;
+
+			for (int i = 0; i < segments; i++)
 			{
-				printf("[%d] Received stop tag from controller\n", myrank);
+				int next_x = current_x + int_segment_length;
+				double must_be = (current_from + real_segment_length * (i + 1));
+				if (next_x < must_be)
+					next_x += must_be - next_x;
+
+				segments_borders[i * 2] = current_x;
+				segments_borders[i * 2 + 1] = next_x;
+
+				current_x = next_x;
 			}
+
+			current_perimeter = 0;
+
+#pragma omp parallel for
+			for (int i = 0; i < segments; i++) {
+				//printf("%d/%d\n",omp_get_thread_num(), omp_get_max_threads());
+				current_perimeter += calculate_perimeter_for_interval(rectangles, rectangles_length, segments_borders[i * 2], segments_borders[i * 2 + 1], max_x);
+			}
+
+			free(segments_borders);
+		}
+		else if (status.MPI_TAG == STOP_TAG)
+		{
+			printf("[%d] Received stop tag from controller\n", myrank);
+			break;
 		}
 	}
 
@@ -791,7 +771,7 @@ int compare_rectangle_slices(const void* a, const void* b)
 
 int calculate_perimeter_for_interval(Rectangle* rectangles, int rectangles_length, int from, int to, int max_x)
 {
-	printf("[%d] %d Calculating perimeter from %d to %d...\n", myrank, omp_get_thread_num(), from, to);
+	printf("[%d] Calculating perimeter from %d to %d...\n", myrank, from, to);
 
 	int min_min = INT_MAX;
 	int max_max = INT_MIN;
